@@ -2,7 +2,6 @@ import customtkinter as ctk
 import threading
 import time 
 
-
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -22,7 +21,7 @@ class App(ctk.CTk):
         self.SecondFrame.pack(fill="both", expand=True)
 
     def Start3(self):
-        self.ThirdFrame = LoadingFrame(self)
+        self.ThirdFrame = FinishFrame(self)
         self.ThirdFrame.pack(fill="both", expand=True)
 
     def CorrectClock(self, track_time):
@@ -56,11 +55,10 @@ class FirstFrame(ctk.CTkFrame):
         if track_time.isdigit():
             track_time = int(track_time)
             self.pack_forget()
-            threads = []
-            threads.append(threading.Thread(target=self.master.Start2, args=(track_time,)))
-            threads.append(threading.Thread(target=self.master.CorrectClock, args=(track_time,)))
-            threads[0].start()
-            threads[1].start()
+
+            self.master.Start2(track_time)
+            bg_thread = threading.Thread(target=self.master.CorrectClock, args=(track_time,))
+            bg_thread.start()
             
 
 class LoadingFrame(ctk.CTkFrame):
@@ -85,19 +83,27 @@ class LoadingFrame(ctk.CTkFrame):
             self.after(1000, self.update_time)
         else: 
             self.pack_forget()
-            self.master.ThirdFrame = FinishFrame(self.master)
-            self.master.ThirdFrame.pack(fill="both", expand=True)
+            self.master.Start3()
+            self.master.deiconify()
+            self.master.attributes('-topmost', True)
+            self.master.attributes('-topmost', False)
+            self.master.focus_force()
 
 class FinishFrame(ctk.CTkFrame):
     def __init__(self, root): 
         super().__init__(root)
+
+        self.text = ctk.CTkLabel(self,  
+                                 text = "Time to relax!", 
+                                 font = ctk.CTkFont(size = 40))
+        self.text.pack(pady=100)
 
         self.entry = ctk.CTkEntry(self,
                                   placeholder_text="Tell me what you do",
                                   width=600,
                                   height=50,
                                   corner_radius=10)
-        self.entry.pack(pady=150)
+        self.entry.pack(pady=0)
 
         self.buttom = ctk.CTkButton(self,
                                     text="OK",
@@ -105,7 +111,7 @@ class FinishFrame(ctk.CTkFrame):
                                     height=50,
                                     corner_radius=10,
                                     command = self.press_key)
-        self.buttom.pack()
+        self.buttom.pack(pady=60)
         
     def press_key(self): 
         pass
